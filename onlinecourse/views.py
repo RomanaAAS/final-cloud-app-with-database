@@ -146,24 +146,18 @@ def show_exam_result(request, course_id, submission_id):
     lesson_set = list(Lesson.objects.filter(course=course))
     #choices = list(Choice.objects.all())
     total_points = 0
-    my_points = []
-    rel_points = []
+    points = 0
     poss_points = []
-    right_choices = []
     for lesson in lesson_set:
         questions = Question.objects.filter(lesson=lesson)    
         for question in questions:
             poss_points.append(question.grade)
             choice_list = Choice.objects.filter(question=question)
-            for curr_choice in choice_list:
-                if curr_choice.correct_choice is True:
-                    right_choices.append(curr_choice)
-                    rel_points.append(1)
-            if sum(rel_points) == question.grade:
-                my_points.append(question.grade)                 
-    points = sum(my_points)
+            right_choice_list = Choice.objects.filter(question = question, correct_choice=True)  
+            for submission.choice in right_choice_list:
+                points = points +1
     total_points = sum(poss_points)
-    context = {"course":course, "questions":questions, "choices":choice_list,"right choices" : right_choices, "points":points, 
+    context = {"course":course, "questions":questions, "choices":choice_list, "right_choices":right_choice_list, "points":points, 
             "total_points":total_points, 
             "submission":submission,
             "grade": int((points / total_points) * 100) }

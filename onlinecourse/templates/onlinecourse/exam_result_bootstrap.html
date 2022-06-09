@@ -39,7 +39,7 @@
     {% if grade > 80 %}
         <div class="alert alert-success">
        <!--HINT Display passed info -->
-        <p><b>Congratulation {{user.first_name}}!</b> You have passed the exam and completed the course with score {{points}}/{{total_points}}</p>
+        <p><b>Congratulation {{ user.first_name }}!</b> You have passed the exam and completed the course with score {{points}}/{{total_points}}</p>
         </div>
     {% else %}
         <div class="alert alert-danger">
@@ -57,7 +57,11 @@
                     <div class="card-body">
                 <!-- <HINT> Each question will have many choices -->
                         {% for choice in question.choice_set.all %}
+                            {% if choice.id in right_choices %}
                                 <p>Correct answer: {{ choice.choice }}</p>
+                            {% else %}
+                                <p>{{ choice.choice }}</p>
+                            {% endif %}
                         {% endfor %}
                     </div>
             </div>

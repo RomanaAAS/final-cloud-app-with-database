@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views import generic
+from django.db.models import Sum
 from django.contrib.auth import login, logout, authenticate
 import logging
 # Get an instance of a logger
@@ -142,34 +143,30 @@ def show_exam_result(request, course_id, submission_id):
     #user = request.user
     course = get_object_or_404(Course, pk=course_id)
     submission = get_object_or_404(Submission, pk=submission_id) 
-    #choice_list = Submission.objects.filter(submission=submission).choices
-    lesson_set = list(Lesson.objects.filter(course=course))
-    #choices = list(Choice.objects.all())
+    
+    lessons = Lesson.objects.filter(course=course)
     total_points = 0
     points = 0
-    poss_points = []
-    for lesson in lesson_set:
-        questions = Question.objects.filter(lesson=lesson)    
+    right_choiceIDs = []
+    for lesson in lessons:
+        questions = lesson.question_set.all()
+        questionGrade = questions.aggregate(Sum('grade'))['grade__sum']
+        
+        if questionGrade != None:
+            total_points += questionGrade
+        
+        subChoiceIDs = submission.choices.all().values_list('id', flat=True)
+        rightChoices = submission.choices.filter(correct_choice = True).values_list('id', flat=True)
+        right_choiceIDs.extend(rightChoices)
+
         for question in questions:
-            poss_points.append(question.grade)
-            choice_list = Choice.objects.filter(question=question)
-            right_choice_list = Choice.objects.filter(question = question, correct_choice=True)  
-            for submission.choice in right_choice_list:
-                points = points +1
-    total_points = sum(poss_points)
-    context = {"course":course, "questions":questions, "choices":choice_list, "right_choices":right_choice_list, "points":points, 
+            if question.is_get_score(subChoiceIDs) is True:
+                points += question.grade
+    print('These are the %s/%s'%(points,total_points))
+    
+    context = {"course":course, "questions":questions, "points":points, 
             "total_points":total_points, 
-            "submission":submission,
+            "submission":submission, "right_choices": right_choiceIDs,
             "grade": int((points / total_points) * 100) }
     return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
-    #correct_answers = choice_list.check(correct_answers=True)
-    #context = {}
-    #context['course']= course
-    #context['choices']= choice_list
-    #for cor_answ in correct_answers:
-    #    grade = sum(models.Question.get(grade))
-    #    return grade
-   # context['grade'] = grade
-    #grade_sum = sum(models.Question.filter(course=course)
-    #context['total_sum'] = grade_sum
-    #return render(request, 'onlinecourse:show_exam_result',context)
+    

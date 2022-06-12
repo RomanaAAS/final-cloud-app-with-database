@@ -58,7 +58,11 @@
                 <!-- <HINT> Each question will have many choices -->
                         {% for choice in question.choice_set.all %}
                             {% if choice.id in right_choices %}
-                                <p>Correct answer: {{ choice.choice }}</p>
+                                <p class="text-success">Correct answer: {{ choice.choice }}</p>
+                            {% elif choice.id in missing_choices %}
+                                <p class="text-warning">Missing answer: {{ choice.choice }}</p>
+                            {% elif choice.id in wrong_choices %}
+                                <p class="text-danger">Wrong answer: {{ choice.choice }}</p>
                             {% else %}
                                 <p>{{ choice.choice }}</p>
                             {% endif %}

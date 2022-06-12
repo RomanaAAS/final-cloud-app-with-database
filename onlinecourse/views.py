@@ -148,6 +148,7 @@ def show_exam_result(request, course_id, submission_id):
     total_points = 0
     points = 0
     right_choiceIDs = []
+    missing_choices = []
     for lesson in lessons:
         questions = lesson.question_set.all()
         questionGrade = questions.aggregate(Sum('grade'))['grade__sum']
@@ -158,15 +159,22 @@ def show_exam_result(request, course_id, submission_id):
         subChoiceIDs = submission.choices.all().values_list('id', flat=True)
         rightChoices = submission.choices.filter(correct_choice = True).values_list('id', flat=True)
         right_choiceIDs.extend(rightChoices)
+        wrongChoices = submission.choices.filter(correct_choice = False).values_list('id', flat=True)
 
         for question in questions:
+            completeChoices = question.choice_set.filter(correct_choice = True).values_list('id', flat=True)
+            missing_choicesID = completeChoices.difference(rightChoices)
+            missing_choices.extend(missing_choicesID)
+            print('Missing Choices: %s'%(missing_choices))
+
             if question.is_get_score(subChoiceIDs) is True:
                 points += question.grade
+
     print('These are the %s/%s'%(points,total_points))
     
     context = {"course":course, "questions":questions, "points":points, 
             "total_points":total_points, 
-            "submission":submission, "right_choices": right_choiceIDs,
+            "submission":submission, "right_choices": right_choiceIDs, "missing_choices": missing_choices, "wrong_choices":wrongChoices,
             "grade": int((points / total_points) * 100) }
     return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
     

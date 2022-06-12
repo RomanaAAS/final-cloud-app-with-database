@@ -1,11 +1,11 @@
   applications:
   - name: onlinecourse
     routes:
-      - route:RL_Django_1.eu-de.mybluemix.net
+      - route:my_space1.eu-de.mybluemix.net
     memory: 128M
     buildpack: python_buildpack
   - name: onlinecourse-nginx
     routes:
-      - route: RL_Django_1.eu-de.cf.appdomain.cloud/static
+      - route: my_space1.eu-de.cf.appdomain.cloud/static
     memory: 128M
     buildpack: staticfile_buildpack
